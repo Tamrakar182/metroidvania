@@ -15,7 +15,7 @@ async function main() {
     })
 };
 
-await main();
+main();
 
 k.scene("intro", () => {
     k.onKeyPress("enter", () => {

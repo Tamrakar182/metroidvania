@@ -34,7 +34,7 @@ export function makePlayer(k) {
 
                 this.controlHandlers.push(
                     k.onKeyPress((key) => {
-                        if (key === "x") {
+                        if (key === "x" || key === "space") {
                             if (this.curAnim() !== "jump") this.play("jump");
                             this.doubleJump();
                         }

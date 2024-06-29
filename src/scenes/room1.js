@@ -1,3 +1,4 @@
+import { makeDrone } from "../entities/enemyDrone.js";
 import { makePlayer } from "../entities/player.js";
 import { setBackgroundColor, setCameraControls, setCameraZones, setMapColliders } from "./roomUtils.js";
 
@@ -38,10 +39,16 @@ export function room1(k, roomData) {
 
     for (const position of positions) {
         if(position.name === "player") {
-            player.setPosition(position.x, position.y);
+            player.setPosition(position.x - 4, position.y - 4);
             player.setControls();
             player.setEvents();
             player.enablePassthrough();
+        }
+
+        if(position.type === "drone") {
+            const drone = map.add(makeDrone(k, k.vec2(position.x, position.y)));
+            drone.setBehavior();
+            drone.setEvents();
         }
     }
 
