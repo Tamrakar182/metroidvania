@@ -1,6 +1,6 @@
-import { statePropsEnum, state } from "../state/globalStateManager.js";
-import { makeNotificationBox } from "../ui/notificationBox.js";
+import { state, statePropsEnum } from "../state/globalStateManager.js";
 import { makeBlink } from "./entitySharedLogic.js";
+import { makeNotificationBox } from "../ui/notificationBox.js";
 
 export function makeBoss(k, initialPos) {
     return k.make([
@@ -15,17 +15,17 @@ export function makeBoss(k, initialPos) {
             "open-fire",
             "fire",
             "shut-fire",
-            "explode"
+            "explode",
         ]),
         k.health(15),
         k.opacity(1),
-        "burnerBoss",
         {
             pursuitSpeed: 100,
             fireRange: 40,
             fireDuration: 1,
             setBehavior() {
                 const player = k.get("player", { recursive: true })[0];
+
                 this.onStateUpdate("idle", () => {
                     if (state.current().playerIsInBossFight) {
                         this.enterState("follow");
@@ -33,54 +33,56 @@ export function makeBoss(k, initialPos) {
                 });
 
                 this.onStateEnter("follow", () => this.play("run"));
+
                 this.onStateUpdate("follow", () => {
                     this.flipX = player.pos.x <= this.pos.x;
                     this.moveTo(
-                        k.vec2(player.pos.x, player.pos.y), this.pursuitSpeed
+                        k.vec2(player.pos.x, player.pos.y + 12),
+                        this.pursuitSpeed
                     );
 
                     if (this.pos.dist(player.pos) < this.fireRange) {
                         this.enterState("open-fire");
                     }
-                })
+                });
 
-                this.onStateEnter("open-fire", () => this.play("open-fire"));
+                this.onStateEnter("open-fire", () => {
+                    this.play("open-fire");
+                });
 
                 this.onStateEnter("fire", () => {
-                    const flameThrowerSound = k.play("flamethrower");
+                    const flamethrowerSound = k.play("flamethrower");
                     const fireHitbox = this.add([
                         k.area({ shape: new k.Rect(k.vec2(0), 70, 10) }),
                         k.pos(this.flipX ? -70 : 0, 5),
                         "fire-hitbox",
-                    ])
+                    ]);
 
                     fireHitbox.onCollide("player", () => {
                         player.hurt(1);
-                        if (player.hp() === 0) {
-                            state.set(statePropsEnum.playerIsInBossFight, false);
-                        }
+                        if (player.hp() === 0)
+                            state.set(statePropsEnum.playerInBossFight, false);
                     });
 
                     k.wait(this.fireDuration, () => {
-                        flameThrowerSound.stop();
+                        flamethrowerSound.stop();
                         this.enterState("shut-fire");
                     });
                 });
 
                 this.onStateEnd("fire", () => {
-                    const fireHitbox = k.get("fire-hitbox", { recursive: true })
+                    const fireHitbox = k.get("fire-hitbox", { recursive: true })[0];
                     if (fireHitbox) k.destroy(fireHitbox);
                 });
 
                 this.onStateUpdate("fire", () => {
                     if (this.curAnim() !== "fire") this.play("fire");
-                  });
+                });
 
                 this.onStateEnter("shut-fire", () => {
                     this.play("shut-fire");
                 });
             },
-
             setEvents() {
                 const player = k.get("player", { recursive: true })[0];
 
