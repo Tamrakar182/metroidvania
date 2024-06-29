@@ -61,7 +61,7 @@ export function makeBoss(k, initialPos) {
                     fireHitbox.onCollide("player", () => {
                         player.hurt(1);
                         if (player.hp() === 0)
-                            state.set(statePropsEnum.playerInBossFight, false);
+                            state.set(statePropsEnum.playerIsInBossFight, false);
                     });
 
                     k.wait(this.fireDuration, () => {

@@ -80,12 +80,12 @@ export function setMapColliders(k, map, colliders) {
       bossBarrier.onCollide("player", async (player) => {
         const currentState = state.current();
         if (currentState.isBossDefeated) {
-          state.set(statePropsEnum.playerInBossFight, false);
+          state.set(statePropsEnum.playerIsInBossFight, false);
           bossBarrier.deactivate(player.pos.x);
           return;
         }
 
-        if (currentState.playerInBossFight) return;
+        if (currentState.playerIsInBossFight) return;
         player.disableControls();
         player.play("idle");
         await k.tween(
@@ -100,10 +100,10 @@ export function setMapColliders(k, map, colliders) {
 
       bossBarrier.onCollideEnd("player", () => {
         const currentState = state.current();
-        if (currentState.playerInBossFight || currentState.isBossDefeated)
+        if (currentState.playerIsInBossFight || currentState.isBossDefeated)
           return;
 
-        state.set(statePropsEnum.playerInBossFight, true);
+        state.set(statePropsEnum.playerIsInBossFight, true);
 
         bossBarrier.activate();
         bossBarrier.use(k.body({ isStatic: true }));
@@ -127,7 +127,7 @@ export function setMapColliders(k, map, colliders) {
 
 export function setCameraControls(k, player, map, roomData) {
   k.onUpdate(() => {
-    if (state.current().playerInBossFight) return;
+    if (state.current().playerIsInBossFight) return;
 
     if (map.pos.x + 160 > player.pos.x) {
       k.camPos(map.pos.x + 160, k.camPos().y);
