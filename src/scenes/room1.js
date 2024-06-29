@@ -1,13 +1,19 @@
+import { setBackgroundColor, setMapColliders } from "./roomUtils.js";
 
+export function room1(k, roomData) {
+    setBackgroundColor(k, "#a2aed5");
 
+    const roomLayers = roomData.layers;
 
-export function room1(k) {
-    k.add([
-        k.text('Hello', {
-            font: "glyphmesss",
-        }),
-        k.pos(100,100)
-    ])
+    const map = k.add([k.pos(0, 0), k.sprite("room1")]);
+    const colliders = [];
+    for (const layer of roomLayers) {
+        if(layer.name === "colliders") {
+            colliders.push(...layer.objects);
+            break;
+        }
+    }
 
-} 
+    setMapColliders(k, map, colliders);
 
+}
