@@ -1,4 +1,5 @@
-import { state } from "../state/globalStateManager.js";
+import { state, statePropsEnum } from "../state/globalStateManager.js";
+import { makeBlink } from "./entitySharedLogic.js";
 
 export function makePlayer(k) {
     return k.make([
@@ -23,7 +24,7 @@ export function makePlayer(k) {
             },
             enablePassthrough() {
                 this.onBeforePhysicsResolve((collision) => {
-                    if(collision.target.is("passthrough") && this.isJumping()) {
+                    if (collision.target.is("passthrough") && this.isJumping()) {
                         collision.preventResolution();
                     }
                 })
@@ -98,8 +99,23 @@ export function makePlayer(k) {
                 )
             },
 
+            disableControls() {
+                for (const handler of this.controlHandlers) {
+                    handler.cancel()
+                }
+            },
+
+            respawnIfOutOfBounds(boundValue, destinationName, previousSceneData = { exitName: null }) {
+                // todo
+
+            },
+
             setEvents() {
                 this.onFall(() => {
+                    this.play("fall");
+                });
+
+                this.onFallOff(() => {
                     this.play("fall");
                 });
 
@@ -109,7 +125,36 @@ export function makePlayer(k) {
 
                 this.onHeadbutt(() => {
                     this.play("fall");
+                });
+
+                this.on("heal", () => {
+                    state.set(statePropsEnum.playerHp, this.hp());
+                    // todo
+                });
+
+                this.on("hurt", () => {
+                    makeBlink(k, this);
+                    if (this.hp() > 0) {
+                        state.set(statePropsEnum.playerHp, this.hp());
+                        // todo
+                        return
+                    }
+
+                    k.play("boom");
+                    this.play("explode");
+                    state.set(statePropsEnum.playerHp, state.current().maxPlayerHp);
+                });
+
+                this.onAnimEnd((anim) => {
+                    if (anim === "explode") {
+                        k.go("room1");
+                    }
                 })
+
+            },
+
+            enableDoubleJump() {
+                this.numJumps = 2;
             }
         },
     ])

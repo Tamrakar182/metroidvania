@@ -100,8 +100,6 @@ export function makeDrone(k, initialPos) {
             this.hurt(1);
           });
   
-          // event defined by default by the health component
-          // when health is removed
           this.on("hurt", () => {
             if (this.hp() === 0) {
               this.trigger("explode");
