@@ -15,6 +15,8 @@ export function makeBoss(k, initialPos) {
             "open-fire",
             "fire",
             "shut-fire",
+            "retreat",
+            "rage",
             "explode",
         ]),
         k.health(15),
@@ -23,6 +25,9 @@ export function makeBoss(k, initialPos) {
             pursuitSpeed: 100,
             fireRange: 40,
             fireDuration: 1,
+            retreatThreshold: 5,
+            rageThreshold: 2,
+            rageSpeedMultiplier: 2,
             setBehavior() {
                 const player = k.get("player", { recursive: true })[0];
 
@@ -43,6 +48,10 @@ export function makeBoss(k, initialPos) {
 
                     if (this.pos.dist(player.pos) < this.fireRange) {
                         this.enterState("open-fire");
+                    }
+
+                    if (this.hp() <= this.retreatThreshold) {
+                        this.enterState("retreat");
                     }
                 });
 
@@ -81,6 +90,37 @@ export function makeBoss(k, initialPos) {
 
                 this.onStateEnter("shut-fire", () => {
                     this.play("shut-fire");
+                });
+
+                this.onStateEnter("retreat", () => {
+                    this.play("run");
+                    this.moveTo(k.vec2(initialPos.x, initialPos.y), this.pursuitSpeed);
+                    k.wait(2, () => {
+                        if (this.hp() <= this.rageThreshold) {
+                            this.enterState("rage");
+                        } else {
+                            this.enterState("follow");
+                        }
+                    });
+                });
+
+
+                this.onStateEnter("rage", () => {
+                    this.pursuitSpeed *= this.rageSpeedMultiplier;
+                    this.fireDuration /= 2;
+                    this.play("run");
+                });
+
+                this.onStateUpdate("rage", () => {
+                    this.flipX = player.pos.x <= this.pos.x;
+                    this.moveTo(
+                        k.vec2(player.pos.x, player.pos.y + 12),
+                        this.pursuitSpeed
+                    );
+
+                    if (this.pos.dist(player.pos) < this.fireRange) {
+                        this.enterState("open-fire");
+                    }
                 });
             },
             setEvents() {

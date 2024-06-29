@@ -6,9 +6,7 @@ export function makePlayer(k) {
     return k.make([
         k.pos(),
         k.sprite("player"),
-        k.area({
-            shape: new k.Rect(k.vec2(0, 18), 12, 12),
-        }),
+        k.area({ shape: new k.Rect(k.vec2(0, 18), 12, 12) }),
         k.anchor("center"),
         k.body({ mass: 100, jumpForce: 320 }),
         k.doubleJump(state.current().isDoubleJumpUnlocked ? 2 : 1),
@@ -18,7 +16,6 @@ export function makePlayer(k) {
         {
             speed: 150,
             isAttacking: false,
-
             setPosition(x, y) {
                 this.pos.x = x;
                 this.pos.y = y;
@@ -28,9 +25,8 @@ export function makePlayer(k) {
                     if (collision.target.is("passthrough") && this.isJumping()) {
                         collision.preventResolution();
                     }
-                })
+                });
             },
-
             setControls() {
                 this.controlHandlers = [];
 
@@ -41,12 +37,16 @@ export function makePlayer(k) {
                             this.doubleJump();
                         }
 
-                        if (key === "z" && this.curAnim() !== "attack" && this.isGrounded()) {
+                        if (
+                            key === "z" &&
+                            this.curAnim() !== "attack" &&
+                            this.isGrounded()
+                        ) {
                             this.isAttacking = true;
                             this.add([
                                 k.pos(this.flipX ? -25 : 0, 10),
                                 k.area({ shape: new k.Rect(k.vec2(0), 25, 10) }),
-                                "sword-hitbox"
+                                "sword-hitbox",
                             ]);
                             this.play("attack");
 
@@ -59,11 +59,10 @@ export function makePlayer(k) {
                                     this.isAttacking = false;
                                     this.play("idle");
                                 }
-                            })
-
+                            });
                         }
                     })
-                )
+                );
 
                 this.controlHandlers.push(
                     k.onKeyDown((key) => {
@@ -85,7 +84,7 @@ export function makePlayer(k) {
                             return;
                         }
                     })
-                )
+                );
 
                 this.controlHandlers.push(
                     k.onKeyRelease(() => {
@@ -97,22 +96,25 @@ export function makePlayer(k) {
                         )
                             this.play("idle");
                     })
-                )
+                );
             },
 
             disableControls() {
                 for (const handler of this.controlHandlers) {
-                    handler.cancel()
+                    handler.cancel();
                 }
             },
 
-            respawnIfOutOfBounds(boundValue, destinationName, previousSceneData = { exitName: null }) {
+            respawnIfOutOfBounds(
+                boundValue,
+                destinationName,
+                previousSceneData = { exitName: null }
+            ) {
                 k.onUpdate(() => {
                     if (this.pos.y > boundValue) {
                         k.go(destinationName, previousSceneData);
                     }
                 });
-
             },
 
             setEvents() {
@@ -123,11 +125,9 @@ export function makePlayer(k) {
                 this.onFallOff(() => {
                     this.play("fall");
                 });
-
                 this.onGround(() => {
                     this.play("idle");
                 });
-
                 this.onHeadbutt(() => {
                     this.play("fall");
                 });
@@ -142,25 +142,24 @@ export function makePlayer(k) {
                     if (this.hp() > 0) {
                         state.set(statePropsEnum.playerHp, this.hp());
                         healthBar.trigger("update");
-                        return
+                        return;
                     }
 
+                    state.set(statePropsEnum.playerHp, state.current().maxPlayerHp);
                     k.play("boom");
                     this.play("explode");
-                    state.set(statePropsEnum.playerHp, state.current().maxPlayerHp);
                 });
 
                 this.onAnimEnd((anim) => {
                     if (anim === "explode") {
                         k.go("room1");
                     }
-                })
-
+                });
             },
 
             enableDoubleJump() {
                 this.numJumps = 2;
-            }
+            },
         },
-    ])
+    ]);
 }

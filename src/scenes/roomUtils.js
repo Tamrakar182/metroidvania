@@ -55,9 +55,8 @@ export function setMapColliders(k, map, colliders) {
               1,
               (val) => k.camPos(val, k.camPos().y),
               k.easings.linear
-            )
+            );
           },
-
           async deactivate(playerPosX) {
             k.tween(
               this.opacity,
@@ -66,7 +65,6 @@ export function setMapColliders(k, map, colliders) {
               (val) => (this.opacity = val),
               k.easings.linear
             );
-
             await k.tween(
               k.camPos().x,
               playerPosX,
@@ -74,46 +72,42 @@ export function setMapColliders(k, map, colliders) {
               (val) => k.camPos(val, k.camPos().y),
               k.easings.linear
             );
-
             k.destroy(this);
-          }
-
-        }
+          },
+        },
       ]);
+
       bossBarrier.onCollide("player", async (player) => {
         const currentState = state.current();
-
         if (currentState.isBossDefeated) {
-          state.set(statePropsEnum.playerIsInBossFight, false)
+          state.set(statePropsEnum.playerInBossFight, false);
           bossBarrier.deactivate(player.pos.x);
           return;
         }
 
-        if (currentState.playerIsInBossFight) return;
-
+        if (currentState.playerInBossFight) return;
         player.disableControls();
         player.play("idle");
-
         await k.tween(
           player.pos.x,
           player.pos.x + 25,
           0.2,
-          (val) => player.pos.x = val,
-          k.easings.linear,
+          (val) => (player.pos.x = val),
+          k.easings.linear
         );
         player.setControls();
       });
+
       bossBarrier.onCollideEnd("player", () => {
         const currentState = state.current();
-
-        if (currentState.playerIsInBossFight || currentState.isBossDefeated)
+        if (currentState.playerInBossFight || currentState.isBossDefeated)
           return;
 
-        state.set(statePropsEnum.playerIsInBossFight, true);
+        state.set(statePropsEnum.playerInBossFight, true);
+
         bossBarrier.activate();
         bossBarrier.use(k.body({ isStatic: true }));
-
-      })
+      });
 
       continue;
     }
@@ -133,7 +127,7 @@ export function setMapColliders(k, map, colliders) {
 
 export function setCameraControls(k, player, map, roomData) {
   k.onUpdate(() => {
-    if (state.current().playerIsInBossFight) return;
+    if (state.current().playerInBossFight) return;
 
     if (map.pos.x + 160 > player.pos.x) {
       k.camPos(map.pos.x + 160, k.camPos().y);
@@ -143,14 +137,13 @@ export function setCameraControls(k, player, map, roomData) {
     if (player.pos.x > map.pos.x + roomData.width * roomData.tilewidth - 160) {
       k.camPos(
         map.pos.x + roomData.width * roomData.tilewidth - 160,
-        k.camPos().y,
+        k.camPos().y
       );
       return;
     }
 
     k.camPos(player.pos.x, k.camPos().y);
-  })
-
+  });
 }
 
 export function setCameraZones(k, map, cameras) {
@@ -158,7 +151,7 @@ export function setCameraZones(k, map, cameras) {
     const cameraZone = map.add([
       k.area({
         shape: new k.Rect(k.vec2(0), camera.width, camera.height),
-        collisionIgnore: ['collider']
+        collisionIgnore: ["collider"],
       }),
       k.pos(camera.x, camera.y),
     ]);
@@ -171,9 +164,9 @@ export function setCameraZones(k, map, cameras) {
           0.8,
           (val) => k.camPos(k.camPos().x, val),
           k.easings.linear
-        )
+        );
       }
-    })
+    });
   }
 }
 
